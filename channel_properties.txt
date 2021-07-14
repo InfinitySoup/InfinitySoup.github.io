@@ -1,0 +1,9 @@
+title=Seth's Podcast
+description=The podcast where Seth does stuff.
+image=https://infinitysoup.github.io/cover.png
+author=Seth P. Corry
+explicit=no
+
+# This can be 'episodic' (independent) or 'serial' (watched in order):
+type=episodic
+category=Fiction
