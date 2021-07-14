@@ -74,7 +74,7 @@ def gen_RSS(sourcepath):
     ET.SubElement(channel, 'description').text = cpops['description']
     ET.SubElement(channel, 'itunes:summary').text = cpops['summary']
     ET.SubElement(channel, 'language').text = 'en-us'
-    ET.SubElement(channel, 'link').text = 'http://www.InfinitySoup.github.io/'
+    ET.SubElement(channel, 'link').text = 'http://InfinitySoup.github.io/'
     ET.SubElement(channel, 'itunes:author').text = cpops['author']
     ET.SubElement(channel, 'itunes:explicit').text = cpops['explicit']
     img = ET.SubElement(channel, 'image')
@@ -139,7 +139,7 @@ def gen_descs(path, destpath):
                     epp.write('\npubDate=' + formatdate())
 
                     epp.write('\n')
-                    epp.write('\nenclosure=https://www.InfinitySoup.github.io/published/' + item.replace(' ', '_'))
+                    epp.write('\nenclosure=https://InfinitySoup.github.io/published/' + item.replace(' ', '_'))
                     epp.write('\nduration=' + strftime("%H:%M:%S", gmtime(math.ceil(aud.info.length))))
                     epp.write('\nguid=' + str(abs(hash(item + str(ts) + str(aud.info.length)))))
                     epp.write('\nbytelength=' + str(os.path.getsize(path + item)))

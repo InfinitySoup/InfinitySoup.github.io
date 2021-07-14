@@ -1,9 +1,9 @@
 title=PLACEHOLDER EPISODE TITLE
 description=PLACEHOLDER EPISODE DESCRIPTION
 explicit=no
-pubDate=Wed, 14 Jul 2021 23:19:36 -0000
+pubDate=Wed, 14 Jul 2021 23:48:34 -0000
 
-enclosure=https://www.InfinitySoup.github.io/published/Sound_Test_Pop.mp3
+enclosure=https://InfinitySoup.github.io/published/Sound_Test_Pop.mp3
 duration=00:00:05
-guid=4764667593777191
+guid=6435766654685443972
 bytelength=51642
