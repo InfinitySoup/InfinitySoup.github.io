@@ -221,7 +221,7 @@ if __name__ == '__main__':
             lin = input('Hmm. I don\'t see anything in the \'to_publish\' folder. Try again, and press [ENTER] when you\'re ready.\nOr, if you\'d like to skip this step, type \'skip\' and press [ENTER].\n')
 
     if lin.lower() != 'skip':
-        print('Are you sure that you\'re satisfied with your changes the text files? This information cannot be changed once entered!')
+        print('Are you sure that you\'re satisfied with your changes to the text files? This information cannot be changed once entered!')
         input('Press [ENTER] to confirm.\n')
 
         print('Cool! Just a second...')
@@ -232,3 +232,6 @@ if __name__ == '__main__':
         strr = input('\nYour RSS has been created! Would you like to publish it online? (y/n)\n')
         if len(strr) > 0 and strr[0] == 'y':
             print('Publishing to Github...')
+            os.system('git add .')
+            os.system('git commit -m \"automatic commit from do_rss.py\"')
+            os.system("git push origin main")

@@ -1,0 +1,9 @@
+title=Spanish Night
+description=a fine young one, too
+explicit=no
+pubDate=Thu, 15 Jul 2021 01:35:42 -0000
+
+enclosure=https://InfinitySoup.github.io/published/spanish_night.mp3
+duration=00:00:31
+guid=1285312248297733336
+bytelength=647805
