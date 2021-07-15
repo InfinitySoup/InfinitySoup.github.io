@@ -35,22 +35,6 @@ def wait_for_file(filepath):
         print('Please stop using the file and the program will continue!!!')
         time.sleep(wait_time)
 
-def publish_all(sourcepath, destpath):
-    dirs = os.listdir(sourcepath)
-
-    if len(dirs) == 0:
-        print('to_publish folder empty, skipping...')
-        return 1
-    print('Found files to publish:')
-    print(dirs)
-
-    for item in dirs:
-        if os.path.isfile(sourcepath+item):
-            if item.split('.')[-1].lower() in ('mp3', 'txt'):
-                print('relocating ' + sourcepath + item + ' to ' + destpath)
-                wait_for_file(sourcepath + item)
-                shutil.move(sourcepath + item, destpath + item)
-
 def get_dict(filepath):
     with open(filepath, 'r') as file:
         data = file.read().split('\n')
@@ -63,6 +47,41 @@ def get_dict(filepath):
         return dct
 
 cpops = get_dict('channel_properties.txt')
+
+def publish_all(sourcepath, destpath):
+    dirs = os.listdir(sourcepath)
+
+    if len(dirs) == 0:
+        print('to_publish folder empty, skipping...')
+        return 1
+    print('Found files to publish:')
+    print(dirs)
+
+    # Fix .mp3 file metadata
+    for item in dirs:
+        if os.path.isfile(sourcepath+item):
+            if item.split('.')[-1].lower() in ('txt'):
+                if 'txt' in item:
+                    mp3name = sourcepath + '.'.join(item.split('.')[:-1]) + '.mp3'
+                    mp3name = mp3name.replace(' ', '_')
+                    try:
+                        meta = EasyID3(mp3name)
+                    except mutagen.id3.ID3NoHeaderError:
+                        print('No ID3 tags found in' + mp3name + 'adding genre, title, and artist tags...')
+                        meta = mutagen.File(mp3name, easy=True)
+                        meta.add_tags()
+                        meta['title'] = get_dict(sourcepath+item)['title']
+                        meta['artist'] = cpops['artist']
+                        meta['genre'] = 'Podcast'
+                        meta.save(mp3name, v1=2)
+
+    # move everything
+    for item in dirs:
+        if os.path.isfile(sourcepath+item):
+            if item.split('.')[-1].lower() in ('mp3', 'txt'):
+                print('relocating ' + sourcepath + item + ' to ' + destpath)
+                wait_for_file(sourcepath + item)
+                shutil.move(sourcepath + item, destpath + item)
 
 def gen_RSS(sourcepath):
     root = ET.Element('rss', {'xmlns:itunes':'http://www.itunes.com/dtds/podcast-1.0.dtd',
@@ -132,21 +151,11 @@ def gen_descs(path, destpath):
                 ts = os.path.getmtime(path + item)
                 aud = MP3(path + item)
 
-                try:
-                    meta = EasyID3(path + item)
-                except mutagen.id3.ID3NoHeaderError:
-                    print('No ID3 tags found in MP3, adding genre and artist tags...')
-                    meta = mutagen.File(path + item, easy=True)
-                    meta.add_tags()
-                    meta['artist'] = cpops['artist']
-                    meta['genre'] = 'Podcast'
-                    meta.save(path + item, v1=2)
-
                 print(aud.info.length)
 
                 try:
-                    epp = open(destpath + item.split('.')[0] + '.txt', 'x')
-                    print('creating ' + item.split('.')[0] + '.txt')
+                    epp = open(destpath + item.replace(' ', '_').split('.')[0] + '.txt', 'x')
+                    print('creating ' + item.replace(' ', '_').split('.')[0] + '.txt')
                     epp.write('title=PLACEHOLDER EPISODE TITLE')
                     epp.write('\ndescription=PLACEHOLDER EPISODE DESCRIPTION')
                     epp.write('\nexplicit=no')
