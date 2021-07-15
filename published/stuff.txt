@@ -1,0 +1,9 @@
+title=Stuff dot emm pee threee
+description=I don't know what this is???
+explicit=no
+pubDate=Thu, 15 Jul 2021 01:13:42 -0000
+
+enclosure=https://InfinitySoup.github.io/published/stuff.mp3
+duration=00:04:44
+guid=5678789655994358401
+bytelength=2905045

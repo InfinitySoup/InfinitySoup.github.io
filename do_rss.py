@@ -11,6 +11,7 @@ from time import gmtime
 from time import strftime
 import math
 
+# returns True if a file is in use
 def is_locked(filepath):
     locked = None
     file_object = None
@@ -28,6 +29,7 @@ def is_locked(filepath):
                 file_object.close()
     return locked
 
+# Waits for a file to no longer be in use (uses time.sleep())
 def wait_for_file(filepath):
     wait_time = 1
     while is_locked(filepath):
@@ -35,6 +37,8 @@ def wait_for_file(filepath):
         print('Please stop using the file and the program will continue!!!')
         time.sleep(wait_time)
 
+# Reads a plaintext file. Lines are split by the first equals sign on them into a dictionary.
+# If a line has no equals signs, or starts with '#', the line is ignored.
 def get_dict(filepath):
     with open(filepath, 'r') as file:
         data = file.read().split('\n')
@@ -46,18 +50,20 @@ def get_dict(filepath):
                     dct[vals[0].strip().lower()] = vals[1].strip()
         return dct
 
+# Load global channel properties
 cpops = get_dict('channel_properties.txt')
 
+# Validates integrity of .mp3 files and moves them and their descriptions to the "published" folder
 def publish_all(sourcepath, destpath):
     dirs = os.listdir(sourcepath)
 
     if len(dirs) == 0:
-        print('to_publish folder empty, skipping...')
+        print('\'to publish\' folder empty, skipping...')
         return 1
     print('Found files to publish:')
     print(dirs)
 
-    # Fix .mp3 file metadata
+    # Fix .mp3 file metadata (ID3 tags)
     for item in dirs:
         if os.path.isfile(sourcepath+item):
             if item.split('.')[-1].lower() in ('txt'):
@@ -83,7 +89,9 @@ def publish_all(sourcepath, destpath):
                 wait_for_file(sourcepath + item)
                 shutil.move(sourcepath + item, destpath + item)
 
+# Generates the RSS feed according to Spotify's standards
 def gen_RSS(sourcepath):
+    # root properties
     root = ET.Element('rss', {'xmlns:itunes':'http://www.itunes.com/dtds/podcast-1.0.dtd',
                             'xmlns:media':'https://search.yahoo.com/mrss/',
                             'xmlns:dcterms':'https://purl.org/dc/terms/',
@@ -92,6 +100,7 @@ def gen_RSS(sourcepath):
                             'xmlns:googleplay':'http://www.google.com/schemas/play-podcasts/1.0',
                             'version':'2.0'})
     channel = ET.SubElement(root, 'channel')
+    # channel-wide properties
     ET.SubElement(channel, 'title').text = cpops['title']
     ET.SubElement(channel, 'description').text = cpops['description']
     ET.SubElement(channel, 'itunes:summary').text = cpops['summary']
@@ -109,6 +118,7 @@ def gen_RSS(sourcepath):
     ET.SubElement(channel, 'itunes:category', text=cpops['category'])
     ET.SubElement(channel, 'spotify:countryOfOrigin').text = 'us'
 
+    # per-item properties
     dirs = os.listdir(sourcepath)
     for item in dirs:
         if os.path.isfile(sourcepath+item):
@@ -128,17 +138,22 @@ def gen_RSS(sourcepath):
     # xml version tag is added in write()
     tree.write('feed.rss', encoding='UTF-8', xml_declaration=True)
 
-    # debug printing
+    # Show nicely printed XML:
     import xml.dom.minidom
     dom = xml.dom.minidom.parse('feed.rss')
-    print('\n')
+    print('\nRSS GENERATED:\n')
     print(dom.toprettyxml())
+    print('\n')
 
+# Generates description files from .mp3 files.
+# These .txt "description" files are used to write metadata onto the RSS feed
+# A better approach might be to use .mp3 metadata for everything, but I think that
+# this is the easiest way to do this without writing a UI.
 def gen_descs(path, destpath):
     dirs = os.listdir(path)
 
     if len(dirs) == 0:
-        print('No files found in raw mp3 folder.')
+        print('\'raw mp3\' folder empty, skipping...')
         return 1
     print('Found files in source folder:')
     print(dirs)
@@ -149,10 +164,9 @@ def gen_descs(path, destpath):
                 wait_for_file(path + item)
                 f, e = os.path.splitext(path + item)
                 ts = os.path.getmtime(path + item)
-                aud = MP3(path + item)
+                aud = MP3(path + item) # used to determine length of mp3 file
 
-                print(aud.info.length)
-
+                # skip if the description already exists (this shouldn't happen, but just in case)
                 try:
                     epp = open(destpath + item.replace(' ', '_').split('.')[0] + '.txt', 'x')
                     print('creating ' + item.replace(' ', '_').split('.')[0] + '.txt')
@@ -164,7 +178,9 @@ def gen_descs(path, destpath):
                     epp.write('\n')
                     epp.write('\nenclosure=https://InfinitySoup.github.io/published/' + item.replace(' ', '_'))
                     epp.write('\nduration=' + strftime("%H:%M:%S", gmtime(math.ceil(aud.info.length))))
-                    epp.write('\nguid=' + str(abs(hash(item + str(aud.info.length)))))
+
+                    # generate a (hopefully) unique and stable identifier from the filename and mp3 length
+                    epp.write('\nguid=' + str(abs(hash(item.replace(' ', '_') + str(aud.info.length)))))
                     epp.write('\nbytelength=' + str(os.path.getsize(path + item)))
                     epp.close()
                     shutil.move(path + item, destpath + item.replace(' ', '_'))
@@ -172,6 +188,47 @@ def gen_descs(path, destpath):
                     print(item.split('.')[0] + '.txt already exists! skipping...')
 
 
-publish_all('to_publish/', 'published/')
-gen_RSS('published/')
-gen_descs('raw_mp3s/', 'to_publish/')
+if __name__ == '__main__':
+    #publish_all('to_publish/', 'published/')
+    #gen_RSS('published/')
+    #gen_descs('raw_mp3s/', 'to_publish/')
+
+    print('\n\nHey there!')
+    print('Welcome to the Github Pages Podcast RSS Feed Generator.')
+    input('Press [ENTER] to continue...')
+    input(
+        '\nOkay, step one: Put your NEW .mp3 files into the \'raw_mp3s\' folder in this directory.\nPress [ENTER] once you\'ve done this.\n')
+
+    import os, time
+
+    dirs = os.listdir('raw_mp3s')
+    lin = ''
+    while len(dirs) == 0 and lin.lower() != 'skip':
+        lin = input('Hmm. I don\'t see anything in the \'raw_mp3s\' folder. Try again, and press [ENTER] when you\'re ready.\nOr, if you\'d like to skip this step, type \'skip\' and press [ENTER].\n')
+        dirs = os.listdir('raw_mp3s')
+
+    if lin.lower() != 'skip':
+        print('Great! Hang on...')
+        time.sleep(0.2)
+        gen_descs('raw_mp3s/', 'to_publish/')
+        print('\nOkay! Now, in the \'to_publish\' folder, you should a text file for each of your mp3s.')
+        print('These text files are how you can set titles and descriptions of tracks, along with some other information.')
+        input('EDIT THOSE TEXT FILES, and when you\'re satisfied with the changes, press [ENTER]')
+    else:
+        dirs = os.listdir('to_publish')
+        lin = ''
+        while len(dirs) == 0 and lin.lower() != 'skip':
+            lin = input('Hmm. I don\'t see anything in the \'to_publish\' folder. Try again, and press [ENTER] when you\'re ready.\nOr, if you\'d like to skip this step, type \'skip\' and press [ENTER].\n')
+
+    if lin.lower() != 'skip':
+        print('Are you sure that you\'re satisfied with your changes the text files? This information cannot be changed once entered!')
+        input('Press [ENTER] to confirm.\n')
+
+        print('Cool! Just a second...')
+
+        publish_all('to_publish/', 'published/')
+        gen_RSS('published/')
+
+        strr = input('\nYour RSS has been created! Would you like to publish it online? (y/n)\n')
+        if len(strr) > 0 and strr[0] == 'y':
+            print('Publishing to Github...')

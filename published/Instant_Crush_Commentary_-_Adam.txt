@@ -1,9 +1,0 @@
-title=tjsrtjsrtj
-description=PLACEHOLDER EPISODE DESCRIPTION
-explicit=no
-pubDate=Thu, 15 Jul 2021 00:19:58 -0000
-
-enclosure=https://InfinitySoup.github.io/published/Instant_Crush_Commentary_-_Adam.mp3
-duration=00:00:06
-guid=454108149440325668
-bytelength=90198
