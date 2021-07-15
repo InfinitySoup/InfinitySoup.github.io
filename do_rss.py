@@ -138,7 +138,7 @@ def gen_descs(path, destpath):
     dirs = os.listdir(path)
 
     if len(dirs) == 0:
-        print('No files found in source folder!')
+        print('No files found in raw mp3 folder.')
         return 1
     print('Found files in source folder:')
     print(dirs)
@@ -172,6 +172,6 @@ def gen_descs(path, destpath):
                     print(item.split('.')[0] + '.txt already exists! skipping...')
 
 
-gen_RSS('published/')
 publish_all('to_publish/', 'published/')
+gen_RSS('published/')
 gen_descs('raw_mp3s/', 'to_publish/')
