@@ -1,18 +1,11 @@
-title=Seth's Podcast
-
-description=The super-fun podcast, with Seth! Come on in and have a good time with Seth and his podcast about lots of things. He will talk! It will be cool, believe me.
-
-summary=The podcast where Seth does stuff.
-
-image=https://infinitysoup.github.io/cover.png
-
-author=Seth P. Corry
-
-email=porshasipder5552@gmail.com
-
-explicit=no
-
+TITLE=Seth's Podcast
+DESCRIPTION=The super-fun podcast, with Seth! Come on in and have a good time with Seth and his podcast about lots of things. He will talk! It will be cool, believe me.
+SUMMARY=The podcast where Seth does stuff.
+IMAGE=https://infinitysoup.github.io/cover.png
+AUTHOR=Seth P. Corry
+ARTIST=Seth P. Corry
+EMAIL=porshasipder5552@gmail.com
+EXPLICIT=no
 # This can be 'episodic' (independent) or 'serial' (watched in order):
-type=episodic
-
-category=Fiction
+TYPE=episodic
+CATEGORY=Fiction

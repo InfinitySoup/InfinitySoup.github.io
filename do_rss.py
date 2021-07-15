@@ -4,6 +4,8 @@ import os, sys, time
 import shutil
 from datetime import datetime
 from mutagen.mp3 import MP3
+import mutagen
+from mutagen.easyid3 import EasyID3
 from email.utils import formatdate
 from time import gmtime
 from time import strftime
@@ -57,11 +59,12 @@ def get_dict(filepath):
             if not data[0] == '#':
                 if '=' in x:
                     vals = x.split('=', 1)
-                    dct[vals[0].strip()] = vals[1].strip()
+                    dct[vals[0].strip().lower()] = vals[1].strip()
         return dct
 
+cpops = get_dict('channel_properties.txt')
+
 def gen_RSS(sourcepath):
-    cpops = get_dict('channel_properties.txt')
     root = ET.Element('rss', {'xmlns:itunes':'http://www.itunes.com/dtds/podcast-1.0.dtd',
                             'xmlns:media':'https://search.yahoo.com/mrss/',
                             'xmlns:dcterms':'https://purl.org/dc/terms/',
@@ -95,7 +98,7 @@ def gen_RSS(sourcepath):
                 item = ET.SubElement(channel, 'item')
                 ET.SubElement(item, 'title').text = data['title']
                 ET.SubElement(item, 'description').text = data['description']
-                ET.SubElement(item, 'pubDate').text = data['pubDate']
+                ET.SubElement(item, 'pubDate').text = data['pubdate']
                 ET.SubElement(item, 'duration').text = data['duration']
                 ET.SubElement(item, 'enclosure', url=data['enclosure'], type='audio/mpeg', length=data['bytelength'])
                 ET.SubElement(item, 'guid', isPermaLink='false').text=data['guid']
@@ -128,6 +131,17 @@ def gen_descs(path, destpath):
                 f, e = os.path.splitext(path + item)
                 ts = os.path.getmtime(path + item)
                 aud = MP3(path + item)
+
+                try:
+                    meta = EasyID3(path + item)
+                except mutagen.id3.ID3NoHeaderError:
+                    print('No ID3 tags found in MP3, adding genre and artist tags...')
+                    meta = mutagen.File(path + item, easy=True)
+                    meta.add_tags()
+                    meta['artist'] = cpops['artist']
+                    meta['genre'] = 'Podcast'
+                    meta.save(path + item, v1=2)
+
                 print(aud.info.length)
 
                 try:
@@ -141,7 +155,7 @@ def gen_descs(path, destpath):
                     epp.write('\n')
                     epp.write('\nenclosure=https://InfinitySoup.github.io/published/' + item.replace(' ', '_'))
                     epp.write('\nduration=' + strftime("%H:%M:%S", gmtime(math.ceil(aud.info.length))))
-                    epp.write('\nguid=' + str(abs(hash(item + str(ts) + str(aud.info.length)))))
+                    epp.write('\nguid=' + str(abs(hash(item + str(aud.info.length)))))
                     epp.write('\nbytelength=' + str(os.path.getsize(path + item)))
                     epp.close()
                     shutil.move(path + item, destpath + item.replace(' ', '_'))
