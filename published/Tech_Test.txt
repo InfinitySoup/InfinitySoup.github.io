@@ -1,0 +1,9 @@
+title=A Trully Good Joke
+description=Awesome LOLS
+explicit=yes
+pubDate=Thu, 15 Jul 2021 02:49:42 -0000
+
+enclosure=https://InfinitySoup.github.io/published/Tech_Test.mp3
+duration=00:00:11
+guid=3772541621486607317
+bytelength=133572
